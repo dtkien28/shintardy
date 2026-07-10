@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  full_name     String?
+  avatar_url    String?
+  school        String?
+  major         String?
+  role          String   @default("member")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  classSchedules ClassSchedule[]
+  todos          Todo[]
+  studySessions  StudySession[]
+  playlists      Playlist[]
+  storyBookmarks StoryBookmark[]
+  moodCheckins   MoodCheckin[]
+  habitLogs      HabitLog[]
+}
+
+model ClassSchedule {
+  id           String   @id @default(uuid())
+  user_id      String
+  subject_name String
+  day_of_week  Int      // 0 = Sunday, 1 = Monday, etc.
+  start_time   String   // e.g. "07:00"
+  end_time     String   // e.g. "09:15"
+  location     String?
+  note         String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Todo {
+  id          String    @id @default(uuid())
+  user_id     String
+  title       String
+  description String?
+  due_date    DateTime?
+  priority    String    @default("medium") // low, medium, high
+  status      String    @default("todo") // todo, in-progress, done
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model StudySession {
+  id               String    @id @default(uuid())
+  user_id          String
+  mode             String    // solo, group
+  duration_minutes Int
+  started_at       DateTime
+  ended_at         DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Playlist {
+  id         String   @id @default(uuid())
+  user_id    String
+  name       String
+  mood_tag   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user   User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  tracks PlaylistTrack[]
+}
+
+model PlaylistTrack {
+  id          String   @id @default(uuid())
+  playlist_id String
+  title       String
+  url         String
+  duration    Int?     // in seconds
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  playlist Playlist @relation(fields: [playlist_id], references: [id], onDelete: Cascade)
+}
+
+model Story {
+  id              String    @id @default(uuid())
+  tier            String    // LARGE, MEDIUM, SMALL
+  title           String
+  summary         String
+  lesson_takeaway String?
+  mood_tags       String[]
+  major_tags      String[]
+  audio_url       String?
+  status          String    @default("DRAFT") // DRAFT, PENDING, PUBLISHED
+  author_type     String    @default("EDITOR") // EDITOR, MEMBER
+  created_by      String
+  published_at    DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  bookmarks StoryBookmark[]
+}
+
+model StoryBookmark {
+  id         String   @id @default(uuid())
+  user_id    String
+  story_id   String
+  created_at DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [story_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, story_id])
+}
+
+model MoodCheckin {
+  id          String   @id @default(uuid())
+  user_id     String
+  mood_emoji  String
+  phase       String   @default("RANDOM") // BEFORE_SESSION, AFTER_SESSION, RANDOM
+  created_at  DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model HabitLog {
+  id          String   @id @default(uuid())
+  user_id     String
+  habit_type  String   // SLEEP, WATER, EXERCISE
+  value       Int      // e.g. glasses of water, hours of sleep
+  logged_at   DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}

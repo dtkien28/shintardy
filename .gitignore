@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# AI Agents & Documentation (ignored per request)
+AGENTS.md
+CLAUDE.md
+Shintardy_Buoc_thuc_hien_ky_thuat.md
+StudyHub.txt
+StudyHub_Tai_lieu_mo_ta_du_an.docx
+*.md
+*.docx
+*.txt
+
+# OS metadata
+.DS_Store
+Thumbs.db
