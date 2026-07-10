@@ -6,9 +6,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "scripts": {
-  "start": "node src/server.js",
-  "build": "npx prisma generate && npx prisma db push"
-}
+  ]
 }
