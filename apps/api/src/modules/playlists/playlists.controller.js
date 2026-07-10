@@ -29,6 +29,26 @@ class PlaylistsController {
     }
   }
 
+  async uploadTrack(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'Vui lòng tải lên tệp âm thanh' } });
+      }
+      
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const trackData = {
+        title: req.file.originalname.replace(/\.[^/.]+$/, ""),
+        url: fileUrl,
+      };
+
+      const track = await playlistsService.addTrack(req.userId, req.params.id, trackData);
+      res.status(201).json({ data: track });
+    } catch (error) {
+      if (error.code) return res.status(404).json({ error });
+      res.status(500).json({ error: { code: 'SERVER_ERROR', message: error.message } });
+    }
+  }
+
   async deleteTrack(req, res) {
     try {
       await playlistsService.deleteTrack(req.userId, req.params.trackId);

@@ -11,6 +11,33 @@ export default function StudyRoomPage() {
   const [mode, setMode] = useState<"pomodoro" | "shortBreak" | "longBreak">("pomodoro");
   const [startTime, setStartTime] = useState<Date | null>(null);
   
+  const [todayStats, setTodayStats] = useState({ count: 0, minutes: 0 });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/study-sessions");
+      const sessions = res.data.data;
+      
+      const today = new Date().toLocaleDateString();
+      const todaysSessions = sessions.filter((s: any) => 
+        new Date(s.created_at).toLocaleDateString() === today
+      );
+
+      const totalMinutes = todaysSessions.reduce((acc: number, curr: any) => acc + curr.duration_minutes, 0);
+      
+      setTodayStats({
+        count: todaysSessions.length,
+        minutes: totalMinutes
+      });
+    } catch (error) {
+      console.error("Failed to fetch study stats", error);
+    }
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -54,14 +81,13 @@ export default function StudyRoomPage() {
     if (mode !== "pomodoro" || !startTime) return;
     
     try {
-      // API call to save the study session
       await api.post("/study-sessions", {
         mode: "solo",
         duration_minutes: 25,
         started_at: startTime.toISOString(),
         ended_at: new Date().toISOString()
       });
-      // Optionally show a success toast here
+      fetchStats();
     } catch (error) {
       console.error("Failed to save study session", error);
     }
@@ -206,11 +232,11 @@ export default function StudyRoomPage() {
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
                 <span className="text-sm text-muted-foreground">Số phiên hoàn thành</span>
-                <span className="font-bold text-lg">0</span>
+                <span className="font-bold text-lg">{todayStats.count}</span>
               </div>
               <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
                 <span className="text-sm text-muted-foreground">Thời gian tập trung</span>
-                <span className="font-bold text-lg text-primary">0 phút</span>
+                <span className="font-bold text-lg text-primary">{todayStats.minutes} phút</span>
               </div>
             </div>
           </motion.div>

@@ -9,6 +9,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files for uploaded MP3s
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Basic health check route
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Shintardy API is running' });

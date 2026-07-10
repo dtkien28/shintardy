@@ -111,6 +111,23 @@ class AuthService {
 
     return user;
   }
+  async changePassword(userId, data) {
+    const { oldPassword, newPassword } = data;
+    
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw { code: 'USER_NOT_FOUND', message: 'Người dùng không tồn tại' };
+
+    const isValid = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!isValid) throw { code: 'INVALID_PASSWORD', message: 'Mật khẩu cũ không chính xác' };
+
+    const password_hash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password_hash }
+    });
+
+    return true;
+  }
 }
 
 module.exports = new AuthService();
